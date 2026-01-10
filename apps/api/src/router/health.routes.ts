@@ -6,7 +6,7 @@ import { getPoolStats } from '@app/database';
 import { livenessCheck, logger, readinessCheck, runHealthChecks } from '@app/utils';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
-export async function registerHealthRoutes(app: FastifyInstance): Promise<void> {
+export function registerHealthRoutes(app: FastifyInstance): void {
     /**
      * Liveness probe - confirms the process is running
      * Used by Kubernetes to determine if container needs restart

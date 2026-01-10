@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
-export async function registerApiRoutes(app: FastifyInstance): Promise<void> {
+export function registerApiRoutes(app: FastifyInstance): void {
     /**
      * Base API endpoint - returns welcome message
      */
