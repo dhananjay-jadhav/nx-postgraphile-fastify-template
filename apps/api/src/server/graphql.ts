@@ -6,10 +6,6 @@ import { preset } from './graphile.config.js';
 
 /**
  * Initializes and mounts the PostGraphile GraphQL server.
- *
- * Query validation (depth/cost limits) is handled by QueryValidationPlugin
- * which hooks into grafast's middleware after parsing, avoiding double-parse.
- *
  * @throws Error if GraphQL server fails to initialize
  */
 export async function setupGraphQL(app: FastifyInstance): Promise<PostGraphileInstance> {

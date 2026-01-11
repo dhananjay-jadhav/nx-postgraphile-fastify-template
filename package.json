@@ -26,19 +26,19 @@
         "gen:app": "node scripts/generate-app.js",
         "gen:lib": "node scripts/generate-lib.js",
         "gen:gql-crud": "node scripts/generate-gql-crud.js",
+        "db:seed": "node scripts/seed-users.js",
         "perf:test": "ts-node --project performance/tsconfig.json performance/src/cli.ts",
         "perf:list": "ts-node --project performance/tsconfig.json performance/src/cli.ts --list",
         "perf:rest": "ts-node --project performance/tsconfig.json performance/src/cli.ts --category=rest",
         "perf:graphql": "ts-node --project performance/tsconfig.json performance/src/cli.ts --category=graphql",
         "perf:run": "ts-node --project performance/tsconfig.json performance/src/cli.ts --endpoint",
-        "perf:stress": "CONNECTIONS=100 DURATION=60 ts-node --project performance/tsconfig.json performance/src/cli.ts"
+        "perf:stress": "CONNECTIONS=80 DURATION=60 ts-node --project performance/tsconfig.json performance/src/cli.ts --category=graphql"
     },
     "private": true,
     "dependencies": {
         "@dataplan/pg": "^1.0.0-rc.2",
         "@fastify/compress": "^8.0.1",
         "@fastify/helmet": "^13.0.1",
-        "@fastify/rate-limit": "^10.3.0",
         "@fastify/static": "^8.2.0",
         "@graphile/simplify-inflection": "^8.0.0-rc.2",
         "axios": "^1.6.0",

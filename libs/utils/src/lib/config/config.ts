@@ -28,14 +28,6 @@ const envSchema = Joi.object({
 
     // Security
     JWT_SECRET: Joi.string().allow('').default(''),
-
-    // Rate Limiting
-    RATE_LIMIT_MAX: Joi.number().min(1).default(100),
-    RATE_LIMIT_WINDOW_MS: Joi.number().min(1000).default(60000), // 1 minute
-
-    // GraphQL Security
-    GRAPHQL_DEPTH_LIMIT: Joi.number().min(1).default(10),
-    GRAPHQL_COST_LIMIT: Joi.number().min(1).default(1000),
 })
     .unknown(true)
     .options({ abortEarly: false });
@@ -58,10 +50,6 @@ export interface EnvConfig {
     DATABASE_SSL: boolean;
     DATABASE_SSL_REJECT_UNAUTHORIZED: boolean;
     JWT_SECRET: string;
-    RATE_LIMIT_MAX: number;
-    RATE_LIMIT_WINDOW_MS: number;
-    GRAPHQL_DEPTH_LIMIT: number;
-    GRAPHQL_COST_LIMIT: number;
     isProduction: boolean;
     isDevelopment: boolean;
     isTest: boolean;
