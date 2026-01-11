@@ -1,4 +1,4 @@
-# Benchmark Results: Express vs Fastify with PostGraphile V5 #
+# Benchmark Results: Express vs Fastify with PostGraphile V5
 
 > Stress test conducted on January 10, 2026 | MacBook Air M1 | Node.js v20.x | PostgreSQL 16-alpine
 
@@ -10,39 +10,49 @@
 
 ```sql
 CREATE TABLE public.users (
-    id SERIAL PRIMARY KEY,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    age INTEGER NOT NULL CHECK (age >= 0 AND age <= 150),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id SERIAL PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  age INTEGER NOT NULL CHECK (age >= 0 AND age <= 150),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
 
 ### Column Details
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | SERIAL | PRIMARY KEY | Auto-incrementing unique identifier |
-| `first_name` | VARCHAR(100) | NOT NULL | User's first name |
-| `last_name` | VARCHAR(100) | NOT NULL | User's last name |
-| `age` | INTEGER | NOT NULL, CHECK (0-150) | User's age with validation |
-| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Record creation timestamp |
-| `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Last modification timestamp (auto-updated) |
+| Column       | Type        | Constraints                                | Description                                      |
+|--------------|-------------|--------------------------------------------|--------------------------------------------------|
+| `id`         | SERIAL      | PRIMARY KEY                                | Auto-incrementing unique identifier              |
+| `first_name` | VARCHAR(100)| NOT NULL                                   | User's first name                                |
+| `last_name`  | VARCHAR(100)| NOT NULL                                   | User's last name                                 |
+| `age`        | INTEGER     | NOT NULL, CHECK (age >= 0 AND age <= 150)  | User's age with validation                       |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW()                    | Record creation timestamp                        |
+| `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW()                    | Last modification timestamp (auto-updated)       |
 
 ### Performance Indexes
 
-| Index Name | Columns | Purpose |
-|------------|---------|---------|
-| `idx_users_last_name` | `last_name` | Fast last name lookups |
-| `idx_users_first_name` | `first_name` | Fast first name lookups |
-| `idx_users_full_name` | `last_name, first_name` | Composite name search |
-| `idx_users_age` | `age` | Age range filtering |
-| `idx_users_created_at` | `created_at DESC` | Recent users, pagination |
+| Index Name            | Columns                    | Purpose                    |
+|-----------------------|----------------------------|----------------------------|
+| `idx_users_last_name` | `last_name`                | Fast last name lookups     |
+| `idx_users_first_name`| `first_name`               | Fast first name lookups    |
+| `idx_users_full_name` | `last_name, first_name`    | Composite name search      |
+| `idx_users_age`       | `age`                      | Age range filtering        |
+| `idx_users_created_at`| `created_at DESC`          | Recent users, pagination   |
 
 ### Seed Data
 
-10 sample users pre-loaded: John Doe, Jane Smith, Alice Johnson, Bob Williams, Charlie Brown, Diana Davis, Edward Miller, Fiona Wilson, George Moore, Hannah Taylor
+10 sample users pre-loaded:
+- John Doe
+- Jane Smith
+- Alice Johnson
+- Bob Williams
+- Charlie Brown
+- Diana Davis
+- Edward Miller
+- Fiona Wilson
+- George Moore
+- Hannah Taylor
 
 ---
 
@@ -50,35 +60,35 @@ CREATE TABLE public.users (
 
 ### REST API Tests (4 tests)
 
-| Test Key | Endpoint | Description |
-|----------|----------|-------------|
+| Test Key | Endpoint   | Description                             |
+|----------|------------|-----------------------------------------|
 | `health` | `GET /health` | Comprehensive health check with DB pool status |
-| `live` | `GET /live` | Kubernetes liveness probe |
-| `ready` | `GET /ready` | Kubernetes readiness probe |
-| `api` | `GET /api` | Base API endpoint |
+| `live`   | `GET /live`   | Kubernetes liveness probe              |
+| `ready`  | `GET /ready`  | Kubernetes readiness probe             |
+| `api`    | `GET /api`    | Base API endpoint                      |
 
 ### GraphQL Schema Tests (4 tests)
 
-| Test Key | Query | Description |
-|----------|-------|-------------|
-| `graphql_typename` | `{ __typename }` | Minimal introspection |
-| `graphql_introspection` | Full `__schema` query | Schema type introspection |
-| `graphql_query` | `{ query { nodeId } }` | Simple root query |
-| `graphql_node` | `{ node(nodeId: "...") }` | Node interface query |
+| Test Key              | Query                          | Description                     |
+|-----------------------|--------------------------------|---------------------------------|
+| `graphql_typename`    | `{ __typename }`               | Minimal introspection           |
+| `graphql_introspection`| full `__schema` query         | Schema type introspection       |
+| `graphql_query`       | `{ query { nodeId } }`         | Simple root query               |
+| `graphql_node`        | `{ node(nodeId: "...") }`      | Node interface query            |
 
 ### GraphQL Users Tests (9 tests)
 
-| Test Key | Operation | Query/Mutation |
-|----------|-----------|----------------|
-| `graphql_users_list` | Query | `allUsers(first: 10) { totalCount nodes { ... } }` |
-| `graphql_user_by_id` | Query | `userById(id: 1) { id firstName lastName age }` |
-| `graphql_users_filtered` | Query | `allUsers(condition: { age >= 25, age <= 40 })` |
-| `graphql_users_sorted` | Query | `allUsers(orderBy: [LAST_NAME_ASC, FIRST_NAME_ASC])` |
-| `graphql_users_search` | Query | `allUsers(condition: { lastName: "Smith" })` |
-| `graphql_create_user` | Mutation | `createUser(input: { ... })` |
-| `graphql_update_user` | Mutation | `updateUserById(input: { id: 1, patch: { age } })` |
-| `graphql_users_count` | Query | `allUsers { totalCount }` |
-| `graphql_users_pagination` | Query | `allUsers(first: 5, offset: 5)` |
+| Test Key                | Operation | Query / Mutation |
+|-------------------------|-----------|------------------|
+| `graphql_users_list`    | Query     | `allUsers(first: 10) { totalCount nodes { ... } }` |
+| `graphql_user_by_id`    | Query     | `userById(id: 1) { id firstName lastName age }` |
+| `graphql_users_filtered`| Query     | `allUsers(condition: { age >= 25, age <= 40 })` |
+| `graphql_users_sorted`  | Query     | `allUsers(orderBy: [LAST_NAME_ASC, FIRST_NAME_ASC])` |
+| `graphql_users_search`  | Query     | `allUsers(condition: { lastName: "Smith" })` |
+| `graphql_create_user`   | Mutation  | `createUser(input: { ... })` |
+| `graphql_update_user`   | Mutation  | `updateUserById(input: { id: 1, patch: { age } })` |
+| `graphql_users_count`   | Query     | `allUsers { totalCount }` |
+| `graphql_users_pagination`| Query   | `allUsers(first: 5, offset: 5)` |
 
 ---
 
@@ -86,42 +96,42 @@ CREATE TABLE public.users (
 
 ### REST API Performance
 
-| Endpoint | Express (req/s) | Fastify (req/s) | **Improvement** | Fastify Latency | Fastify P99 |
-|----------|-----------------|-----------------|-----------------|-----------------|-------------|
-| `/live` | 8,844 | **16,766** | **+90%** 🚀 | 4.28ms | 14ms |
-| `/api` | 7,000 | **13,911** | **+99%** 🚀 | 5.26ms | 20ms |
-| `/health` | 5,794 | **3,635*** | -37% | 21.53ms | 75ms |
-| `/ready` | 5,663 | **3,716*** | -34% | 21.06ms | 88ms |
+| Endpoint  | Express (req/s) | Fastify (req/s) | Improvement | Fastify Avg Latency | Fastify P99 |
+|-----------|-----------------|-----------------|-------------|---------------------|-------------|
+| `/live`   | 8,844           | **16,766**      | **+90%** 🚀 | 4.28 ms             | 14 ms       |
+| `/api`    | 7,000           | **13,911**      | **+99%** 🚀 | 5.26 ms             | 20 ms       |
+| `/health` | 5,794           | **3,635***      | -37%        | 21.53 ms            | 75 ms       |
+| `/ready`  | 5,663           | **3,716***      | -34%        | 21.06 ms            | 88 ms       |
 
-> *Health/Ready now include comprehensive database checks, making direct comparison unfair.
+> *`/health` and `/ready` include comprehensive database checks in these runs, making direct comparisons with lightweight probes unfair.
 
 ### GraphQL Schema Operations
 
-| Query | Express (req/s) | Fastify (req/s) | **Improvement** | Fastify Latency | Fastify P99 |
-|-------|-----------------|-----------------|-----------------|-----------------|-------------|
-| `__typename` | 5,482 | **6,521** | **+19%** | 11.76ms | 89ms |
-| Introspection | 5,168 | **5,902** | **+14%** | 13.04ms | 105ms |
-| Simple Query | 5,898 | **7,529** | **+28%** | 10.14ms | 101ms |
-| Node Query | 5,794 | **7,171** | **+24%** | 10.67ms | 110ms |
+| Query           | Express (req/s) | Fastify (req/s) | Improvement | Fastify Avg Latency | Fastify P99 |
+|-----------------|-----------------|-----------------|-------------|---------------------|-------------|
+| `__typename`    | 5,482           | **6,521**       | **+19%**    | 11.76 ms            | 89 ms       |
+| Introspection   | 5,168           | **5,902**       | **+14%**    | 13.04 ms            | 105 ms      |
+| Simple Query    | 5,898           | **7,529**       | **+28%**    | 10.14 ms            | 101 ms      |
+| Node Query      | 5,794           | **7,171**       | **+24%**    | 10.67 ms            | 110 ms      |
 
-### GraphQL Users - Query Performance
+### GraphQL Users — Query Performance
 
-| Query | Fastify (req/s) | Avg Latency | P99 Latency | Throughput |
-|-------|-----------------|-------------|-------------|------------|
-| **User by ID** ⭐ | **7,632** | 10.0ms | 49ms | 5.82 MB/s |
-| Users Filtered | **6,871** | 11.15ms | 123ms | 5.17 MB/s |
-| Users List | **6,844** | 11.20ms | 151ms | 5.15 MB/s |
-| Users Sorted | **5,748** | 13.44ms | 195ms | 4.33 MB/s |
-| Users Search | **5,065** | 15.29ms | 213ms | 3.81 MB/s |
-| Users Count | **3,996** | 19.53ms | 230ms | 3.01 MB/s |
-| Users Pagination | **3,138** | 25.00ms | 240ms | 2.36 MB/s |
+| Query           | Fastify (req/s) | Avg Latency | P99 Latency | Throughput |
+|-----------------|-----------------|-------------|-------------|------------|
+| User by ID ⭐    | **7,632**       | 10.0 ms     | 49 ms       | 5.82 MB/s  |
+| Users Filtered  | **6,871**       | 11.15 ms    | 123 ms      | 5.17 MB/s  |
+| Users List      | **6,844**       | 11.20 ms    | 151 ms      | 5.15 MB/s  |
+| Users Sorted    | **5,748**       | 13.44 ms    | 195 ms      | 4.33 MB/s  |
+| Users Search    | **5,065**       | 15.29 ms    | 213 ms      | 3.81 MB/s  |
+| Users Count     | **3,996**       | 19.53 ms    | 230 ms      | 3.01 MB/s  |
+| Users Pagination| **3,138**       | 25.00 ms    | 240 ms      | 2.36 MB/s  |
 
-### GraphQL Users - Mutation Performance
+### GraphQL Users — Mutation Performance
 
-| Mutation | Fastify (req/s) | Avg Latency | P99 Latency | Throughput |
-|----------|-----------------|-------------|-------------|------------|
-| Update User | **4,804** | 16.18ms | 212ms | 3.67 MB/s |
-| Create User | **1,268** | 62.16ms | 678ms | 8.39 MB/s |
+| Mutation     | Fastify (req/s) | Avg Latency | P99 Latency | Throughput |
+|--------------|-----------------|-------------|-------------|------------|
+| Update User  | **4,804**       | 16.18 ms    | 212 ms      | 3.67 MB/s  |
+| Create User  | **1,268**       | 62.16 ms    | 678 ms      | 8.39 MB/s  |
 
 > Create is slower due to disk writes, index updates, and trigger execution.
 
@@ -131,43 +141,43 @@ CREATE TABLE public.users (
 
 ### Throughput Comparison
 
-| Category | Express | Fastify | Winner |
-|----------|---------|---------|--------|
-| Peak REST | 8,844 req/s | **16,766 req/s** | Fastify (+90%) |
-| Peak GraphQL | 5,898 req/s | **7,632 req/s** | Fastify (+29%) |
-| GraphQL Queries | ~5,500 req/s | **3,100-7,600 req/s** | Fastify |
-| GraphQL Mutations | N/A | **1,200-4,800 req/s** | Fastify |
+| Category         | Express       | Fastify       | Winner        |
+|------------------|---------------|---------------|---------------|
+| Peak REST        | 8,844 req/s   | **16,766 req/s** | Fastify (+90%) |
+| Peak GraphQL     | 5,898 req/s   | **7,632 req/s**  | Fastify (+29%) |
+| GraphQL Queries  | ~5,500 req/s  | **3,100–7,600 req/s** | Fastify |
+| GraphQL Mutations| N/A           | **1,200–4,800 req/s** | Fastify |
 
 ### Latency Comparison
 
-| Metric | Express | Fastify | Improvement |
-|--------|---------|---------|-------------|
-| Avg Latency (REST) | 10-17ms | **4-21ms** | Up to 60% faster |
-| Avg Latency (GraphQL) | 16-19ms | **10-15ms** | ~35% faster |
-| P99 Latency (REST) | 21-40ms | **14-88ms** | More consistent |
+| Metric               | Express      | Fastify       | Improvement         |
+|----------------------|--------------|---------------|---------------------|
+| Avg Latency (REST)   | 10–17 ms     | **4–21 ms**   | Up to ~60% faster   |
+| Avg Latency (GraphQL)| 16–19 ms     | **10–15 ms**  | ~35% faster         |
+| P99 Latency (REST)   | 21–40 ms     | **14–88 ms**  | More consistent     |
 
 ---
 
 ## 🏆 Key Findings
 
-| Finding | Details |
-|---------|---------|
-| ✅ **Fastify wins for pure HTTP** | 90-99% improvement for `/live` and `/api` |
-| ✅ **Indexed queries are fastest** | `userById` achieves 7,632 req/s with 49ms P99 |
-| ✅ **GraphQL scales well** | 5,000-7,600 req/s for various query types |
-| ⚠️ **Mutations are I/O bound** | Create: 1,268 req/s (disk writes + triggers) |
-| ⚠️ **Complex queries have higher P99** | Pagination: 240ms P99 under load |
+| Finding                         | Details                                                           |
+|---------------------------------|-------------------------------------------------------------------|
+| ✅ Fastify wins for pure HTTP    | 90–99% improvement for `/live` and `/api`                         |
+| ✅ Indexed queries are fastest   | `userById` achieves 7,632 req/s with 49ms P99                     |
+| ✅ GraphQL scales well           | 5,000–7,600 req/s for various query types                         |
+| ⚠️ Mutations are I/O bound       | Create: 1,268 req/s (disk writes + triggers)                      |
+| ⚠️ Complex queries have higher P99| Pagination: 240ms P99 under load                                  |
 
 ---
 
 ## 🎯 Final Verdict
 
-**Fastify is the clear winner** for PostGraphile-based GraphQL APIs:
+**Fastify is the clear winner** for PostGraphile-based GraphQL APIs.
 
-| Scenario | Fastify Advantage |
-|----------|-------------------|
-| Pure HTTP endpoints | **90-200% faster** |
-| GraphQL queries | **14-29% faster** |
+| Scenario         | Fastify Advantage        |
+|------------------|-------------------------|
+| Pure HTTP endpoints | **~90–200% faster**  |
+| GraphQL queries     | **~14–29% faster**   |
 | Connection handling | Better under high concurrency |
 | Latency consistency | Lower standard deviation |
 
@@ -187,16 +197,15 @@ Fastify Architecture Advantages:
 
 ## 📋 Test Environment
 
-| Property | Value |
-|----------|-------|
-| Hardware | MacBook Air M1 |
-| OS | macOS |
-| Node.js | v20.x |
-| PostgreSQL | 16-alpine (Docker) |
-| PostGraphile | V5 (grafserv) |
-| Connections | 80 concurrent |
-| Duration | 60 seconds per test |
-| Total Tests | 17 |
-
+| Property      | Value                                 |
+|---------------|---------------------------------------|
+| Hardware      | MacBook Air M1                        |
+| OS            | macOS                                 |
+| Node.js       | v20.x                                 |
+| PostgreSQL    | 16-alpine (Docker)                    |
+| PostGraphile  | V5 (grafserv)                         |
+| Connections   | 80 concurrent                         |
+| Duration      | 60 seconds per test                   |
+| Total Tests   | 17                                    |
 
 ---
