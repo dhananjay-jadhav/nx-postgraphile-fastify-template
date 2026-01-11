@@ -1,5 +1,5 @@
 import { databaseConfig, getPool } from '@app/database';
-import { LoggingPlugin } from '@app/gql';
+import { LoggingPlugin, QueryValidationPlugin } from '@app/gql';
 import { UserWrapPlansPlugin } from '@app/users-api';
 import { env } from '@app/utils';
 import { PgSimplifyInflectionPreset } from '@graphile/simplify-inflection';
@@ -7,7 +7,7 @@ import { makePgService } from 'postgraphile/adaptors/pg';
 import { PostGraphileAmberPreset } from 'postgraphile/presets/amber';
 export const preset: GraphileConfig.Preset = {
     extends: [PostGraphileAmberPreset, PgSimplifyInflectionPreset],
-    plugins: [LoggingPlugin, UserWrapPlansPlugin],
+    plugins: [LoggingPlugin, UserWrapPlansPlugin, QueryValidationPlugin],
     pgServices: [
         makePgService({
             pool: getPool(),
