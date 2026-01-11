@@ -14,8 +14,8 @@
 import 'grafserv/fastify/v4';
 
 import { env, logger } from '@app/utils';
-import { GraphQLError } from 'graphql';
 import type { DocumentNode } from 'graphql';
+import { GraphQLError } from 'graphql';
 
 import { validateQuery } from '../validation/query-validation';
 
