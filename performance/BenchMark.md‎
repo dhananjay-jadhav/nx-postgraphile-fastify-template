@@ -1,4 +1,4 @@
-# Benchmark Results: Express vs Fastify with PostGraphile V5
+# Benchmark Results: Express vs Fastify with PostGraphile V5 #
 
 > Stress test conducted on January 10, 2026 | MacBook Air M1 | Node.js v20.x | PostgreSQL 16-alpine
 
@@ -197,3 +197,6 @@ Fastify Architecture Advantages:
 | Connections | 80 concurrent |
 | Duration | 60 seconds per test |
 | Total Tests | 17 |
+
+
+---
