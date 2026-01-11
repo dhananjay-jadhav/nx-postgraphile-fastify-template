@@ -32,6 +32,10 @@ jobs:
             - name: Start PostgreSQL
               run: docker compose up -d --wait
 
+
+            - name: Run DB Migrations
+              run: yarn db:migrate
+
             - name: Lint
               run: yarn lint
 
@@ -67,6 +71,10 @@ jobs:
 
             - name: Start PostgreSQL
               run: docker compose up -d --wait
+
+
+            - name: Run DB Migrations
+              run: yarn db:migrate
 
             - name: Run e2e tests
               run: yarn e2e api-e2e --skip-nx-cache
