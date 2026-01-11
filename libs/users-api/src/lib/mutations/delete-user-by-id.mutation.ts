@@ -6,10 +6,10 @@
  * @see https://grafast.org/grafast/step-library - Available step functions
  * @see https://postgraphile.org/postgraphile/next/migrating-from-v4/make-wrap-resolvers-plugin - wrapPlans docs
  */
-import type { ExecutableStep, FieldArgs, FieldInfo } from 'grafast';
-import { sideEffect } from 'grafast';
 import type { DeleteUserPayload } from '@app/gql';
 import { logger } from '@app/utils';
+import type { ExecutableStep, FieldArgs, FieldInfo } from 'grafast';
+import { sideEffect } from 'grafast';
 
 /**
  * WrapPlan function type for Mutation.deleteUserById

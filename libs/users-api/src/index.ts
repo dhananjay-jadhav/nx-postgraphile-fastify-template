@@ -18,14 +18,15 @@
  * @see https://postgraphile.org/postgraphile/next/migrating-from-v4/make-wrap-resolvers-plugin - wrapPlans docs
  */
 import { wrapPlans } from 'postgraphile/utils';
+
+import { createUserWrapPlan } from './lib/mutations/create-user.mutation.js';
+import { deleteUserWrapPlan } from './lib/mutations/delete-user.mutation.js';
+import { deleteUserByIdWrapPlan } from './lib/mutations/delete-user-by-id.mutation.js';
+import { updateUserWrapPlan } from './lib/mutations/update-user.mutation.js';
+import { updateUserByIdWrapPlan } from './lib/mutations/update-user-by-id.mutation.js';
 import { userQueryWrapPlan } from './lib/queries/user.query.js';
 import { userByIdQueryWrapPlan } from './lib/queries/user-by-id.query.js';
 import { usersConnectionWrapPlan } from './lib/queries/users.query.js';
-import { createUserWrapPlan } from './lib/mutations/create-user.mutation.js';
-import { updateUserWrapPlan } from './lib/mutations/update-user.mutation.js';
-import { updateUserByIdWrapPlan } from './lib/mutations/update-user-by-id.mutation.js';
-import { deleteUserWrapPlan } from './lib/mutations/delete-user.mutation.js';
-import { deleteUserByIdWrapPlan } from './lib/mutations/delete-user-by-id.mutation.js';
 
 /**
  * User WrapPlans Plugin
