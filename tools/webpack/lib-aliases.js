@@ -1,8 +1,8 @@
 /**
  * Shared webpack utility for auto-discovering @app/* library aliases
  */
-const { join } = require('path');
-const { readdirSync } = require('fs');
+const { join } = require('node:path');
+const { readdirSync } = require('node:fs');
 
 /**
  * Auto-generate webpack aliases for all libs in the workspace

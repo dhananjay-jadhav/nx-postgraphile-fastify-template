@@ -1,5 +1,5 @@
 import { getPool } from '@app/database';
-import { env, logger } from '@app/utils';
+import { env, fastifyLoggerConfig } from '@app/utils';
 import Fastify, { FastifyInstance } from 'fastify';
 
 import { registerPlugins, setErrorHandler } from './middleware';
@@ -11,17 +11,22 @@ import { setupGracefulShutdown, setupGraphQL } from './server';
 // ============================================================================
 
 async function startServer(): Promise<void> {
-    // Create Fastify app
+    // Create Fastify app with built-in Pino logger
     const app: FastifyInstance = Fastify({
-        logger: false, // We use our own pino logger
+        logger: fastifyLoggerConfig,
         trustProxy: true,
+        // Generate request ID from header or create new UUID
+        genReqId: (req) => (req.headers['x-request-id'] as string) || crypto.randomUUID(),
+        requestIdHeader: 'x-request-id',
+        // Use 'traceId' instead of default 'reqId' in logs
+        requestIdLogLabel: 'traceId',
+        keepAliveTimeout: env.KEEP_ALIVE_TIMEOUT ?? 65000,
     });
 
     // Initialize database connection
     getPool();
-    logger.info('Database pool initialized');
 
-    // Register plugins (compression, helmet, static files, logging)
+    // Register plugins (compression, helmet, static files)
     await registerPlugins(app);
 
     // Register application routes (health, api)
@@ -39,10 +44,10 @@ async function startServer(): Promise<void> {
     // Start listening
     try {
         await app.listen({ port: env.PORT, host: '0.0.0.0' });
-        logger.info({ port: env.PORT, env: env.NODE_ENV }, `${env.APP_NAME} listening at http://localhost:${env.PORT}`);
-        logger.info({ port: env.PORT }, `GraphQL available at http://localhost:${env.PORT}/graphql`);
+        app.log.info({ port: env.PORT, env: env.NODE_ENV }, `${env.APP_NAME} listening at http://localhost:${env.PORT}`);
+        app.log.info({ port: env.PORT }, `GraphQL available at http://localhost:${env.PORT}/graphql`);
     } catch (error) {
-        logger.error({ error }, 'Server error');
+        app.log.error({ error }, 'Server error');
         process.exit(1);
     }
 }
@@ -52,6 +57,6 @@ async function startServer(): Promise<void> {
 // ============================================================================
 
 startServer().catch((error: Error) => {
-    logger.error({ error }, 'Failed to start server');
+    console.error('Failed to start server:', error);
     process.exit(1);
 });

@@ -1,0 +1,66 @@
+/**
+ * WrapPlan: <%= operations.updateById.fieldName %> Mutation
+ * 
+ * Intercepts Mutation.<%= operations.updateById.fieldName %> - updates <%= typeName %> by global ID.
+ * 
+ * @see https://grafast.org/grafast/step-library - Available step functions
+ * @see https://postgraphile.org/postgraphile/next/migrating-from-v4/make-wrap-resolvers-plugin - wrapPlans docs
+ */
+import type { ExecutableStep, FieldArgs, FieldInfo } from 'grafast';
+import type { <%= operations.updateById.payloadType %> } from '@app/gql';
+
+/**
+ * WrapPlan function type for Mutation.<%= operations.updateById.fieldName %>
+ */
+export type Update<%= typeName %>ByIdWrapPlanFn = typeof <%= operations.updateById.wrapPlanName %>;
+
+/**
+ * WrapPlan for Mutation.<%= operations.updateById.fieldName %>
+ * 
+ * @param plan - Function to call the original plan resolver
+ * @param $source - The parent step (Mutation root)
+ * @param fieldArgs - Access arguments via fieldArgs.getRaw('input') or destructure { $input }
+ * @param info - Field metadata (rarely needed)
+ * @returns ExecutableStep for the mutation payload
+ * 
+ * @example
+ * ```typescript
+ * // apps/api/src/server/graphile.config.ts
+ * import { wrapPlans } from 'postgraphile/utils';
+ * import { <%= operations.updateById.wrapPlanName %> } from '@app/<%= libName %>';
+ * 
+ * const MyWrapPlansPlugin = wrapPlans({
+ *     Mutation: {
+ *         <%= operations.updateById.fieldName %>: <%= operations.updateById.wrapPlanName %>,
+ *     },
+ * });
+ * 
+ * // Add to preset: plugins: [MyWrapPlansPlugin]
+ * ```
+ */
+export function <%= operations.updateById.wrapPlanName %>(
+    plan: () => ExecutableStep<<%= operations.updateById.payloadType %> | null>,
+    $source: ExecutableStep,
+    fieldArgs: FieldArgs,
+    info: FieldInfo
+): ExecutableStep<<%= operations.updateById.payloadType %> | null> {
+    // Access arguments:
+    // const $input = fieldArgs.getRaw('input');
+    // Or destructure: const { $input } = fieldArgs;
+    
+    // Add your custom logic here:
+    // - Input validation (throw before plan() to abort)
+    // - Permission checks  
+    // - Audit logging
+    // - Side effects (notifications, cache invalidation)
+    //
+    // Example: Log update by ID
+    // import { sideEffect } from 'grafast';
+    // const $input = fieldArgs.getRaw('input');
+    // sideEffect($input, (input) => {
+    //     console.log('<%= typeName %> updated by ID:', input?.id);
+    // });
+    
+    // Call original plan and return result
+    return plan();
+}

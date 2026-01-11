@@ -1,78 +1,37 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-
-import { env } from '../config/config';
-import { logger } from './logger';
-
-interface GraphQLBody {
-    operationName?: string;
-}
-
-const getGraphQLOperationName = (req: FastifyRequest): string | undefined => {
-    const body = req.body as GraphQLBody | undefined;
-    const query = req.query as { operationName?: string } | undefined;
-    return body?.operationName || query?.operationName;
-};
-
-const isGraphQLRequest = (req: FastifyRequest): boolean => {
-    const url = req.url || '';
-    return url.includes('/graphql') || url.includes('/graphiql');
-};
-
-const shouldSkipLogging = (req: FastifyRequest): boolean => {
-    const url = req.url || '';
-    return url.includes('/health') || url.includes('/ready') || url.includes('/live');
-};
+/**
+ * Route Logging Filter
+ *
+ * Conditionally skips Fastify's automatic request logging for specific routes.
+ * This reduces log noise for high-frequency or specially-handled endpoints.
+ *
+ * @module
+ */
+import { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify';
 
 /**
- * Fastify request logging hook
- * Attaches logger to request and logs request completion
+ * Routes to skip from Fastify's automatic request logging:
+ * - GraphQL: LoggingPlugin handles with operation details and timing
+ * - Health endpoints: High-frequency probes we don't need to log
+ *
+ * @see libs/gql/src/lib/plugins/logging.plugin.ts for GraphQL operation logging
  */
-export const gqlLogger = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-    // Generate request ID
-    const requestId = (req.headers['x-request-id'] as string) || crypto.randomUUID();
-    req.id = requestId;
+const SKIP_LOGGING_PATTERNS = ['/graphql', '/graphiql', '/health', '/ready', '/live'];
 
-    // Attach child logger with request context
-    const reqLogger = logger.child({
-        requestId,
-        ...(isGraphQLRequest(req) && {
-            graphql: { operationName: getGraphQLOperationName(req) },
-        }),
-        ...(!env.isDevelopment && {
-            userAgent: req.headers['user-agent'],
-            ip: req.headers['x-forwarded-for'] || req.ip,
-        }),
-    });
+const shouldSkipLogging = (url: string): boolean => SKIP_LOGGING_PATTERNS.some((pattern) => url.includes(pattern));
 
-    // Attach logger to request
-    req.log = reqLogger;
-
-    // Log response on finish
-    reply.raw.on('finish', () => {
-        if (shouldSkipLogging(req)) return;
-
-        const statusCode = reply.statusCode;
-        const logLevel = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';
-
-        const logData = {
-            req: {
-                method: req.method,
-                url: req.url,
-                query: req.query,
-            },
-            res: {
-                statusCode,
-            },
-        };
-
-        let message: string;
-        if (isGraphQLRequest(req)) {
-            const op = getGraphQLOperationName(req);
-            message = op ? `GraphQL ${op} completed` : `GraphQL request completed`;
-        } else {
-            message = `${req.method} ${req.url} ${statusCode}`;
-        }
-
-        reqLogger[logLevel](logData, message);
-    });
+/**
+ * Fastify hook to conditionally skip automatic request logging.
+ *
+ * Fastify's built-in Pino logger automatically logs all requests.
+ * This hook disables logging for specific routes by setting req.log.level.
+ *
+ * Usage: app.addHook('onRequest', skipRouteLogging);
+ */
+export const skipRouteLogging = (req: FastifyRequest, _reply: FastifyReply, done: HookHandlerDoneFunction): void => {
+    if (shouldSkipLogging(req.url || '')) {
+        // Suppress automatic request logging for this request
+        // The 'silent' level prevents Fastify from logging request/response
+        req.log = req.log.child({}, { level: 'silent' });
+    }
+    done();
 };

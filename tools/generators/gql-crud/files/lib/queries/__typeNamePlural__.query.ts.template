@@ -1,0 +1,67 @@
+/**
+ * WrapPlan: <%= operations.queryConnection.fieldName %> Connection Query
+ * 
+ * Intercepts Query.<%= operations.queryConnection.fieldName %> - fetches paginated list of <%= typeName %> records.
+ * 
+ * @see https://grafast.org/grafast/step-library - Available step functions
+ * @see https://postgraphile.org/postgraphile/next/migrating-from-v4/make-wrap-resolvers-plugin - wrapPlans docs
+ */
+import type { ExecutableStep, FieldArgs, FieldInfo } from 'grafast';
+import type { <%= operations.types.connection %> } from '@app/gql';
+
+/**
+ * WrapPlan function type for Query.<%= operations.queryConnection.fieldName %>
+ */
+export type <%= TypeNamePlural %>ConnectionWrapPlanFn = typeof <%= operations.queryConnection.wrapPlanName %>;
+
+/**
+ * WrapPlan for Query.<%= operations.queryConnection.fieldName %>
+ * 
+ * @param plan - Function to call the original plan resolver
+ * @param $source - The parent step (Query root)
+ * @param fieldArgs - Access arguments via fieldArgs.getRaw('first'), etc.
+ * @param info - Field metadata (rarely needed)
+ * @returns ExecutableStep for the connection result
+ * 
+ * @example
+ * ```typescript
+ * // apps/api/src/server/graphile.config.ts
+ * import { wrapPlans } from 'postgraphile/utils';
+ * import { <%= operations.queryConnection.wrapPlanName %> } from '@app/<%= libName %>';
+ * 
+ * const MyWrapPlansPlugin = wrapPlans({
+ *     Query: {
+ *         <%= operations.queryConnection.fieldName %>: <%= operations.queryConnection.wrapPlanName %>,
+ *     },
+ * });
+ * 
+ * // Add to preset: plugins: [MyWrapPlansPlugin]
+ * ```
+ */
+export function <%= operations.queryConnection.wrapPlanName %>(
+    plan: () => ExecutableStep<<%= operations.queryConnection.payloadType %> | null>,
+    $source: ExecutableStep,
+    fieldArgs: FieldArgs,
+    info: FieldInfo
+): ExecutableStep<<%= operations.queryConnection.payloadType %> | null> {
+    // Access arguments:
+    // const $first = fieldArgs.getRaw('first');
+    // const $condition = fieldArgs.getRaw('condition');
+    // Or destructure: const { $first, $after, $condition } = fieldArgs;
+    
+    // Add your custom logic here:
+    // - Input validation
+    // - Permission checks  
+    // - Audit logging
+    // - Side effects (notifications, cache invalidation)
+    //
+    // Example: Log pagination params
+    // import { sideEffect } from 'grafast';
+    // const $first = fieldArgs.getRaw('first');
+    // sideEffect($first, (first) => {
+    //     console.log('Fetching <%= typeNamePlural %>, first:', first);
+    // });
+    
+    // Call original plan and return result
+    return plan();
+}

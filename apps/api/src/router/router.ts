@@ -9,7 +9,7 @@ import { registerHealthRoutes } from './health.routes';
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
     // Health check routes (/, /live, /ready, /health)
-    await registerHealthRoutes(app);
+    registerHealthRoutes(app);
 
     // API routes (/api/*)
     await app.register(registerApiRoutes, { prefix: '/api' });

@@ -13,8 +13,8 @@ A production-ready [PostGraphile 5](https://grafast.org/postgraphile/) GraphQL A
 - 🚀 **PostGraphile 5** - Next-generation GraphQL API from your PostgreSQL schema
 - ⚡ **Fastify** - High-performance HTTP framework (2-3x faster than Express)
 - 📦 **Nx Monorepo** - Scalable workspace with libraries and applications
-- 🔒 **Production-ready** - Includes health checks, graceful shutdown, and proper error handling
-- 📝 **Pino Logging** - Structured JSON logging with native Fastify pino integration
+- 🔒 **Production-ready** - Includes health checks, graceful shutdown, proper error handling, rate limiting, and GraphQL query complexity validation
+- 📝 **Pino Logging** - Structured JSON logging with Fastify's native Pino integration and request tracing
 - 🔧 **Environment Validation** - Type-safe configuration using [Joi](https://github.com/hapijs/joi)
 - 🐳 **Docker Integration** - `docker-compose` for easy local development setup
 - 🔄 **GitHub Actions CI** - Automated linting, testing, and building
@@ -148,7 +148,7 @@ This project uses **Fastify** for significantly better performance. Here's how i
 | ------------- | ------- | ----------- | ----------- | ---------- |
 | Simple Query  | 11,228  | 8.42 ms     | 32 ms       | 8.69 MB/s  |
 | Node Query    | 10,102  | 9.43 ms     | 61 ms       | 7.58 MB/s  |
-| __typename    | 8,156   | 11.78 ms    | 78 ms       | 9.19 MB/s  |
+| \_\_typename  | 8,156   | 11.78 ms    | 78 ms       | 9.19 MB/s  |
 | Introspection | 7,897   | 12.18 ms    | 95 ms       | 11.0 MB/s  |
 
 #### Key Metrics
@@ -183,18 +183,34 @@ See [performance/README.md](performance/README.md) for detailed documentation.
 
 ## Environment Variables
 
-| Variable            | Description                          | Default                                                |
-| ------------------- | ------------------------------------ | ------------------------------------------------------ |
-| `NODE_ENV`          | Environment (development/production) | `development`                                          |
-| `PORT`              | Server port                          | `3000`                                                 |
-| `APP_NAME`          | Application name for logging         | `postgraphile-api`                                     |
-| `LOG_LEVEL`         | Logging level                        | `info`                                                 |
-| `DATABASE_URL`      | PostgreSQL connection string         | `postgres://postgres:postgres@localhost:5432/postgres` |
-| `DATABASE_SCHEMAS`  | Comma-separated schema names         | `public`                                               |
-| `DATABASE_POOL_MAX` | Maximum pool connections             | `20`                                                   |
-| `DATABASE_POOL_MIN` | Minimum pool connections             | `2`                                                    |
-| `DATABASE_SSL`      | Enable SSL connection                | `false`                                                |
-| `JWT_SECRET`        | Secret for JWT authentication        | - assword                                              |
+| Variable               | Description                                     | Default                                                |
+| ---------------------- | ----------------------------------------------- | ------------------------------------------------------ |
+| `NODE_ENV`             | Environment (development/production)            | `development`                                          |
+| `PORT`                 | Server port                                     | `3000`                                                 |
+| `APP_NAME`             | Application name for logging                    | `postgraphile-api`                                     |
+| `LOG_LEVEL`            | Logging level                                   | `info`                                                 |
+| `DATABASE_URL`         | PostgreSQL connection string                    | `postgres://postgres:postgres@localhost:5432/postgres` |
+| `DATABASE_SCHEMAS`     | Comma-separated schema names                    | `public`                                               |
+| `DATABASE_POOL_MAX`    | Maximum pool connections                        | `20`                                                   |
+| `DATABASE_POOL_MIN`    | Minimum pool connections                        | `2`                                                    |
+| `DATABASE_SSL`         | Enable SSL connection                           | `false`                                                |
+| `JWT_SECRET`           | Secret for JWT authentication                   | -                                                      |
+| `RATE_LIMIT_MAX`       | Max requests per window (rate limiting)         | `100`                                                  |
+| `RATE_LIMIT_WINDOW_MS` | Rate limit window in ms                         | `60000`                                                |
+| `GRAPHQL_DEPTH_LIMIT`  | Max GraphQL query depth (complexity validation) | `10`                                                   |
+| `GRAPHQL_COST_LIMIT`   | Max GraphQL query cost (complexity validation)  | `1000`                                                 |
+
+## Security Features
+
+### Rate Limiting
+
+The API enforces rate limiting to protect against abuse and DoS attacks. Configure limits using the `RATE_LIMIT_MAX` and `RATE_LIMIT_WINDOW_MS` environment variables.
+
+### GraphQL Query Complexity Validation
+
+To prevent expensive or malicious GraphQL queries, the server validates both query depth and cost. Configure limits using `GRAPHQL_DEPTH_LIMIT` and `GRAPHQL_COST_LIMIT`.
+
+If a query exceeds these limits, the server returns a 400 error with details in the response.
 
 ## Libraries
 
@@ -222,7 +238,7 @@ Shared utilities including logging, configuration, and health checks.
 ```typescript
 import { logger, env, registerHealthCheck } from '@app/utils';
 
-// Structured logging
+// Structured logging (standalone, for startup/background tasks)
 logger.info({ userId }, 'User logged in');
 
 // Access validated environment
@@ -237,36 +253,85 @@ registerHealthCheck('redis', async () => {
 
 ### @app/gql
 
-PostGraphile configuration and plugins.
+GraphQL types, plugins, and utilities.
 
 ```typescript
-import { preset } from '@app/gql';
-import { postgraphile } from 'postgraphile';
-
-const pgl = postgraphile(preset);
+import { LoggingPlugin } from '@app/gql';
+import type { WrapPlanContext } from '@app/gql';
 ```
+
+#### GraphQL Logging
+
+The `LoggingPlugin` provides automatic request tracing for all GraphQL operations:
+
+- **Trace ID correlation** - Every request gets a unique `traceId` (from `x-request-id` header or auto-generated)
+- **Operation timing** - Automatic measurement of query/mutation execution time
+- **Structured logs** - Operation name, type, duration, and errors in JSON format
+
+```json
+{
+    "level": "info",
+    "time": "2026-01-11T10:30:00.000Z",
+    "traceId": "abc-123",
+    "graphql": { "operation": "GetUser", "type": "query" },
+    "durationMs": 12.5,
+    "msg": "GraphQL query GetUser completed in 12.5ms"
+}
+```
+
+Access the logger in resolver functions via the grafast context:
+
+```typescript
+import { context, sideEffect } from 'grafast';
+
+// In a wrapPlan function
+const $logger = context().get('logger');
+sideEffect($logger, logger => {
+    logger.info({ customData: 'value' }, 'Custom log from resolver');
+});
+```
+
+### GQL CRUD Generator
+
+Generate type-safe wrapPlan libraries for your GraphQL types:
+
+```bash
+# Generate library with default naming ({typePlural}-api)
+yarn gen:gql-crud User        # Creates libs/users-api/
+
+# Generate library with custom name
+yarn gen:gql-crud User --name users    # Creates libs/users/
+```
+
+This creates a library with wrapPlan functions for:
+
+- **Queries**: `userQueryWrapPlan`, `userByIdQueryWrapPlan`, `usersConnectionWrapPlan`
+- **Mutations**: `createUserWrapPlan`, `updateUserWrapPlan`, `deleteUserWrapPlan`
+
+See [tools/generators/gql-crud/README.md](tools/generators/gql-crud/README.md) for full documentation.
 
 ## Scripts
 
-| Script                  | Description                        |
-| ----------------------- | ---------------------------------- |
-| `yarn start api`        | Start development server           |
-| `yarn build api`        | Build the API for production       |
-| `yarn api:e2e`          | Run e2e tests for the API          |
-| `yarn lint`             | Run linting on all projects        |
-| `yarn test <lib>`       | Run unit tests for a library       |
-| `yarn all:test`         | Run tests for all projects         |
-| `yarn all:build`        | Build all projects                 |
-| `yarn format`           | Format code with Prettier          |
-| `yarn db:up`            | Start PostgreSQL via Docker        |
-| `yarn db:down`          | Stop and remove PostgreSQL         |
-| `yarn db:logs`          | View PostgreSQL container logs     |
-| `yarn perf:test`        | Run all performance tests          |
-| `yarn perf:list`        | List available performance tests   |
-| `yarn perf:run <tests>` | Run specific test(s)               |
-| `yarn perf:rest`        | Run REST endpoint tests            |
-| `yarn perf:graphql`     | Run GraphQL tests                  |
-| `yarn perf:stress`      | Stress test (100 connections, 60s) |
+| Script                  | Description                          |
+| ----------------------- | ------------------------------------ |
+| `yarn start api`        | Start development server             |
+| `yarn build api`        | Build the API for production         |
+| `yarn api:e2e`          | Run e2e tests for the API            |
+| `yarn lint`             | Run linting on all projects          |
+| `yarn test <lib>`       | Run unit tests for a library         |
+| `yarn all:test`         | Run tests for all projects           |
+| `yarn all:build`        | Build all projects                   |
+| `yarn format`           | Format code with Prettier            |
+| `yarn db:up`            | Start PostgreSQL via Docker          |
+| `yarn db:down`          | Stop and remove PostgreSQL           |
+| `yarn db:logs`          | View PostgreSQL container logs       |
+| `yarn gen:gql-crud`     | Generate wrapPlan library for a type |
+| `yarn perf:test`        | Run all performance tests            |
+| `yarn perf:list`        | List available performance tests     |
+| `yarn perf:run <tests>` | Run specific test(s)                 |
+| `yarn perf:rest`        | Run REST endpoint tests              |
+| `yarn perf:graphql`     | Run GraphQL tests                    |
+| `yarn perf:stress`      | Stress test (100 connections, 60s)   |
 
 ```dockerfile
 # Stage 1: Build the application
