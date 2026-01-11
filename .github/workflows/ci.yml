@@ -37,7 +37,7 @@ jobs:
               run: yarn db:migrate
 
             - name: Lint
-              # run: yarn lint
+              run: yarn lint
 
             - name: Test
               run: yarn all:test
