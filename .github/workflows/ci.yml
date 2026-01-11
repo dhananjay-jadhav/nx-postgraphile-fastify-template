@@ -76,6 +76,9 @@ jobs:
             - name: Run DB Migrations
               run: yarn db:migrate
 
+            - name: Run DB Seeding
+              run: yarn db:seed
+
             - name: Run e2e tests
               run: yarn e2e api-e2e --skip-nx-cache
 
