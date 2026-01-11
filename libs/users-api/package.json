@@ -16,10 +16,10 @@
         }
     },
     "dependencies": {
-        "tslib": "^2.3.0",
-    "postgraphile": "^5.0.0-rc.3",
-    "grafast": "1.0.0-rc.3",
-    "@app/gql": "0.0.1",
-    "@app/utils": "0.0.1"
+        "@app/gql": "0.0.1",
+        "@app/utils": "0.0.1",
+        "grafast": "1.0.0-rc.3",
+        "postgraphile": "^5.0.0-rc.3",
+        "tslib": "^2.3.0"
     }
 }
