@@ -1,0 +1,9 @@
+{
+    "generators": {
+        "wrap-lib": {
+            "factory": "./wrap-lib/index",
+            "schema": "./wrap-lib/schema.json",
+            "description": "Generate a new wrapPlans library for a GraphQL type"
+        }
+    }
+}

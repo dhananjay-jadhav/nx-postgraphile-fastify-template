@@ -10,7 +10,7 @@ A production-ready [PostGraphile 5](https://grafast.org/postgraphile/) GraphQL A
 - ⚡ **Fastify** - High-performance HTTP framework (2-3x faster than Express)
 - 📦 **Nx Monorepo** - Scalable workspace with libraries and applications
 - 🔒 **Production-ready** - Includes health checks, graceful shutdown, and proper error handling
-- 📝 **Pino Logging** - Structured JSON logging with native Fastify pino integration
+- 📝 **Pino Logging** - Structured JSON logging with Fastify's native Pino integration and request tracing
 - 🔧 **Environment Validation** - Type-safe configuration using [Joi](https://github.com/hapijs/joi)
 - 🐳 **Docker Integration** - `docker-compose` for easy local development setup
 - 🔄 **GitHub Actions CI** - Automated linting, testing, and building
@@ -218,7 +218,7 @@ Shared utilities including logging, configuration, and health checks.
 ```typescript
 import { logger, env, registerHealthCheck } from '@app/utils';
 
-// Structured logging
+// Structured logging (standalone, for startup/background tasks)
 logger.info({ userId }, 'User logged in');
 
 // Access validated environment
@@ -233,36 +233,77 @@ registerHealthCheck('redis', async () => {
 
 ### @app/gql
 
-PostGraphile configuration and plugins.
+GraphQL types, plugins, and utilities.
 
 ```typescript
-import { preset } from '@app/gql';
-import { postgraphile } from 'postgraphile';
-
-const pgl = postgraphile(preset);
+import { LoggingPlugin } from '@app/gql';
+import type { WrapPlanContext } from '@app/gql';
 ```
+
+#### GraphQL Logging
+
+The `LoggingPlugin` provides automatic request tracing for all GraphQL operations:
+
+- **Trace ID correlation** - Every request gets a unique `traceId` (from `x-request-id` header or auto-generated)
+- **Operation timing** - Automatic measurement of query/mutation execution time
+- **Structured logs** - Operation name, type, duration, and errors in JSON format
+
+```json
+{"level":"info","time":"2026-01-11T10:30:00.000Z","traceId":"abc-123","graphql":{"operation":"GetUser","type":"query"},"durationMs":12.5,"msg":"GraphQL query GetUser completed in 12.5ms"}
+```
+
+Access the logger in resolver functions via the grafast context:
+
+```typescript
+import { context, sideEffect } from 'grafast';
+
+// In a wrapPlan function
+const $logger = context().get('logger');
+sideEffect($logger, (logger) => {
+    logger.info({ customData: 'value' }, 'Custom log from resolver');
+});
+```
+
+### GQL CRUD Generator
+
+Generate type-safe wrapPlan libraries for your GraphQL types:
+
+```bash
+# Generate library with default naming ({typePlural}-api)
+yarn gen:gql-crud User        # Creates libs/users-api/
+
+# Generate library with custom name
+yarn gen:gql-crud User --name users    # Creates libs/users/
+```
+
+This creates a library with wrapPlan functions for:
+- **Queries**: `userQueryWrapPlan`, `userByIdQueryWrapPlan`, `usersConnectionWrapPlan`
+- **Mutations**: `createUserWrapPlan`, `updateUserWrapPlan`, `deleteUserWrapPlan`
+
+See [tools/generators/gql-crud/README.md](tools/generators/gql-crud/README.md) for full documentation.
 
 ## Scripts
 
-| Script                  | Description                        |
-| ----------------------- | ---------------------------------- |
-| `yarn start api`        | Start development server           |
-| `yarn build api`        | Build the API for production       |
-| `yarn api:e2e`          | Run e2e tests for the API          |
-| `yarn lint`             | Run linting on all projects        |
-| `yarn test <lib>`       | Run unit tests for a library       |
-| `yarn all:test`         | Run tests for all projects         |
-| `yarn all:build`        | Build all projects                 |
-| `yarn format`           | Format code with Prettier          |
-| `yarn db:up`            | Start PostgreSQL via Docker        |
-| `yarn db:down`          | Stop and remove PostgreSQL         |
-| `yarn db:logs`          | View PostgreSQL container logs     |
-| `yarn perf:test`        | Run all performance tests          |
-| `yarn perf:list`        | List available performance tests   |
-| `yarn perf:run <tests>` | Run specific test(s)               |
-| `yarn perf:rest`        | Run REST endpoint tests            |
-| `yarn perf:graphql`     | Run GraphQL tests                  |
-| `yarn perf:stress`      | Stress test (100 connections, 60s) |
+| Script                  | Description                           |
+| ----------------------- | ------------------------------------- |
+| `yarn start api`        | Start development server              |
+| `yarn build api`        | Build the API for production          |
+| `yarn api:e2e`          | Run e2e tests for the API             |
+| `yarn lint`             | Run linting on all projects           |
+| `yarn test <lib>`       | Run unit tests for a library          |
+| `yarn all:test`         | Run tests for all projects            |
+| `yarn all:build`        | Build all projects                    |
+| `yarn format`           | Format code with Prettier             |
+| `yarn db:up`            | Start PostgreSQL via Docker           |
+| `yarn db:down`          | Stop and remove PostgreSQL            |
+| `yarn db:logs`          | View PostgreSQL container logs        |
+| `yarn gen:gql-crud`     | Generate wrapPlan library for a type  |
+| `yarn perf:test`        | Run all performance tests             |
+| `yarn perf:list`        | List available performance tests      |
+| `yarn perf:run <tests>` | Run specific test(s)                  |
+| `yarn perf:rest`        | Run REST endpoint tests               |
+| `yarn perf:graphql`     | Run GraphQL tests                     |
+| `yarn perf:stress`      | Stress test (100 connections, 60s)    |
 
 ```dockerfile
 # Stage 1: Build the application

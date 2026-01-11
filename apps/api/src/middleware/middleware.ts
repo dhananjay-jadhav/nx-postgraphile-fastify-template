@@ -1,18 +1,43 @@
-import { errorHandler, gqlLogger, NotFoundError } from '@app/utils';
+import { join } from 'node:path';
+
+import { env, errorHandler, NotFoundError, skipRouteLogging } from '@app/utils';
 import fastifyCompress from '@fastify/compress';
 import fastifyHelmet from '@fastify/helmet';
+import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { join } from 'path';
 
 /**
  * Registers Fastify plugins:
- * 1. Security headers (helmet)
- * 2. Response compression (gzip/brotli)
- * 3. Request logging
- * 4. Static file serving
+ * 1. Rate limiting
+ * 2. Security headers (helmet)
+ * 3. Response compression (gzip/brotli)
+ * 4. Skip logging for GraphQL/health routes
+ * 5. Static file serving
+ *
+ * Note: Request logging is handled by Fastify's built-in Pino logger.
+ * GraphQL operation logging with timing is handled by LoggingPlugin.
  */
 export async function registerPlugins(app: FastifyInstance): Promise<void> {
+    // Rate limiting - protect against abuse
+    await app.register(fastifyRateLimit, {
+        max: env.RATE_LIMIT_MAX,
+        timeWindow: env.RATE_LIMIT_WINDOW_MS,
+        // Skip rate limiting for health checks
+        allowList: (req) => {
+            const path = req.url || '';
+            return path === '/live' || path === '/ready' || path === '/health';
+        },
+        // Custom error response
+        errorResponseBuilder: (_req, context) => ({
+            error: {
+                code: 'RATE_LIMIT_EXCEEDED',
+                message: `Rate limit exceeded. Try again in ${Math.ceil(context.ttl / 1000)} seconds.`,
+                retryAfter: Math.ceil(context.ttl / 1000),
+            },
+        }),
+    });
+
     // Security headers
     await app.register(fastifyHelmet, {
         contentSecurityPolicy: false, // Disabled for GraphiQL
@@ -22,12 +47,14 @@ export async function registerPlugins(app: FastifyInstance): Promise<void> {
     // Response compression (gzip)
     await app.register(fastifyCompress);
 
-    // Request logging hook
-    app.addHook('onRequest', gqlLogger);
+    // Skip automatic logging for GraphQL and health routes
+    // GraphQL: LoggingPlugin handles with detailed timing
+    // Health: High-frequency, low-value logs
+    app.addHook('onRequest', skipRouteLogging);
 
     // Static files with caching
     await app.register(fastifyStatic, {
-        root: join(__dirname, '..', 'assets'),
+        root: join(__dirname, 'assets'),
         prefix: '/assets/',
         maxAge: '1d',
         etag: true,
@@ -46,7 +73,7 @@ export function setErrorHandler(app: FastifyInstance): void {
     });
 
     // Global error handler
-    app.setErrorHandler((error, request, reply) => {
+    app.setErrorHandler((error: Error, request, reply) => {
         errorHandler(error, request, reply);
     });
 }

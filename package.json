@@ -25,6 +25,7 @@
         "db:status": "node scripts/db-migrate.js status",
         "gen:app": "node scripts/generate-app.js",
         "gen:lib": "node scripts/generate-lib.js",
+        "gen:gql-crud": "node scripts/generate-gql-crud.js",
         "perf:test": "ts-node --project performance/tsconfig.json performance/src/cli.ts",
         "perf:list": "ts-node --project performance/tsconfig.json performance/src/cli.ts --list",
         "perf:rest": "ts-node --project performance/tsconfig.json performance/src/cli.ts --category=rest",
@@ -37,6 +38,7 @@
         "@dataplan/pg": "^1.0.0-rc.2",
         "@fastify/compress": "^8.0.1",
         "@fastify/helmet": "^13.0.1",
+        "@fastify/rate-limit": "^10.3.0",
         "@fastify/static": "^8.2.0",
         "@graphile/simplify-inflection": "^8.0.0-rc.2",
         "axios": "^1.6.0",
@@ -95,7 +97,8 @@
         "apps/*",
         "libs/utils",
         "libs/database",
-        "libs/gql"
+        "libs/gql",
+        "libs/*"
     ],
     "packageManager": "yarn@4.12.0"
 }

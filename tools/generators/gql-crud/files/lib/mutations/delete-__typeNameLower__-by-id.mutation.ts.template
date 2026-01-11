@@ -1,0 +1,66 @@
+/**
+ * WrapPlan: <%= operations.deleteById.fieldName %> Mutation
+ * 
+ * Intercepts Mutation.<%= operations.deleteById.fieldName %> - deletes <%= typeName %> by global ID.
+ * 
+ * @see https://grafast.org/grafast/step-library - Available step functions
+ * @see https://postgraphile.org/postgraphile/next/migrating-from-v4/make-wrap-resolvers-plugin - wrapPlans docs
+ */
+import type { ExecutableStep, FieldArgs, FieldInfo } from 'grafast';
+import type { <%= operations.deleteById.payloadType %> } from '@app/gql';
+
+/**
+ * WrapPlan function type for Mutation.<%= operations.deleteById.fieldName %>
+ */
+export type Delete<%= typeName %>ByIdWrapPlanFn = typeof <%= operations.deleteById.wrapPlanName %>;
+
+/**
+ * WrapPlan for Mutation.<%= operations.deleteById.fieldName %>
+ * 
+ * @param plan - Function to call the original plan resolver
+ * @param $source - The parent step (Mutation root)
+ * @param fieldArgs - Access arguments via fieldArgs.getRaw('input') or destructure { $input }
+ * @param info - Field metadata (rarely needed)
+ * @returns ExecutableStep for the mutation payload
+ * 
+ * @example
+ * ```typescript
+ * // apps/api/src/server/graphile.config.ts
+ * import { wrapPlans } from 'postgraphile/utils';
+ * import { <%= operations.deleteById.wrapPlanName %> } from '@app/<%= libName %>';
+ * 
+ * const MyWrapPlansPlugin = wrapPlans({
+ *     Mutation: {
+ *         <%= operations.deleteById.fieldName %>: <%= operations.deleteById.wrapPlanName %>,
+ *     },
+ * });
+ * 
+ * // Add to preset: plugins: [MyWrapPlansPlugin]
+ * ```
+ */
+export function <%= operations.deleteById.wrapPlanName %>(
+    plan: () => ExecutableStep<<%= operations.deleteById.payloadType %> | null>,
+    $source: ExecutableStep,
+    fieldArgs: FieldArgs,
+    info: FieldInfo
+): ExecutableStep<<%= operations.deleteById.payloadType %> | null> {
+    // Access arguments:
+    // const $input = fieldArgs.getRaw('input');
+    // Or destructure: const { $input } = fieldArgs;
+    
+    // Add your custom logic here:
+    // - Permission checks (throw before plan() to abort)
+    // - Soft delete instead of hard delete
+    // - Audit logging
+    // - Side effects (cleanup, notifications)
+    //
+    // Example: Permission check
+    // import { context, sideEffect } from 'grafast';
+    // const $isAdmin = context().get('isAdmin');
+    // sideEffect($isAdmin, (isAdmin) => {
+    //     if (!isAdmin) throw new Error('Only admins can delete');
+    // });
+    
+    // Call original plan and return result
+    return plan();
+}
