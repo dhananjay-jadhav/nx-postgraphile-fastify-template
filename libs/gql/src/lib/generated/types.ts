@@ -57,6 +57,17 @@ export interface CreateUserPayloadUserEdgeArgs {
   orderBy?: Array<UserOrderBy>;
 }
 
+/** All input for the `deleteUserByEmail` mutation. */
+export interface DeleteUserByEmailInput {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** User email address */
+  email: Scalars['String']['input'];
+}
+
 /** All input for the `deleteUserById` mutation. */
 export interface DeleteUserByIdInput {
   /**
@@ -66,6 +77,17 @@ export interface DeleteUserByIdInput {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   /** The globally unique `ID` which will identify a single `User` to be deleted. */
   id: Scalars['ID']['input'];
+}
+
+/** All input for the `deleteUserByUsername` mutation. */
+export interface DeleteUserByUsernameInput {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** Unique username for login */
+  username: Scalars['String']['input'];
 }
 
 /** All input for the `deleteUser` mutation. */
@@ -109,12 +131,20 @@ export interface Mutation {
   createUser?: Maybe<CreateUserPayload>;
   /** Deletes a single `User` using a unique key. */
   deleteUser?: Maybe<DeleteUserPayload>;
+  /** Deletes a single `User` using a unique key. */
+  deleteUserByEmail?: Maybe<DeleteUserPayload>;
   /** Deletes a single `User` using its globally unique id. */
   deleteUserById?: Maybe<DeleteUserPayload>;
+  /** Deletes a single `User` using a unique key. */
+  deleteUserByUsername?: Maybe<DeleteUserPayload>;
   /** Updates a single `User` using a unique key and a patch. */
   updateUser?: Maybe<UpdateUserPayload>;
+  /** Updates a single `User` using a unique key and a patch. */
+  updateUserByEmail?: Maybe<UpdateUserPayload>;
   /** Updates a single `User` using its globally unique id and a patch. */
   updateUserById?: Maybe<UpdateUserPayload>;
+  /** Updates a single `User` using a unique key and a patch. */
+  updateUserByUsername?: Maybe<UpdateUserPayload>;
 }
 
 
@@ -131,8 +161,20 @@ export interface MutationDeleteUserArgs {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export interface MutationDeleteUserByEmailArgs {
+  input: DeleteUserByEmailInput;
+}
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export interface MutationDeleteUserByIdArgs {
   input: DeleteUserByIdInput;
+}
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export interface MutationDeleteUserByUsernameArgs {
+  input: DeleteUserByUsernameInput;
 }
 
 
@@ -143,8 +185,20 @@ export interface MutationUpdateUserArgs {
 
 
 /** The root mutation type which contains root level fields which mutate data. */
+export interface MutationUpdateUserByEmailArgs {
+  input: UpdateUserByEmailInput;
+}
+
+
+/** The root mutation type which contains root level fields which mutate data. */
 export interface MutationUpdateUserByIdArgs {
   input: UpdateUserByIdInput;
+}
+
+
+/** The root mutation type which contains root level fields which mutate data. */
+export interface MutationUpdateUserByUsernameArgs {
+  input: UpdateUserByUsernameInput;
 }
 
 /** An object with a globally unique `ID`. */
@@ -180,8 +234,12 @@ export interface Query extends Node {
   query: Query;
   /** Get a single `User`. */
   user?: Maybe<User>;
+  /** Get a single `User`. */
+  userByEmail?: Maybe<User>;
   /** Reads a single `User` using its globally unique `ID`. */
   userById?: Maybe<User>;
+  /** Get a single `User`. */
+  userByUsername?: Maybe<User>;
   /** Reads and enables pagination through a set of `User`. */
   users?: Maybe<UserConnection>;
 }
@@ -200,8 +258,20 @@ export interface QueryUserArgs {
 
 
 /** The root query type which gives access points into the data universe. */
+export interface QueryUserByEmailArgs {
+  email: Scalars['String']['input'];
+}
+
+
+/** The root query type which gives access points into the data universe. */
 export interface QueryUserByIdArgs {
   id: Scalars['ID']['input'];
+}
+
+
+/** The root query type which gives access points into the data universe. */
+export interface QueryUserByUsernameArgs {
+  username: Scalars['String']['input'];
 }
 
 
@@ -216,6 +286,19 @@ export interface QueryUsersArgs {
   orderBy?: InputMaybe<Array<UserOrderBy>>;
 }
 
+/** All input for the `updateUserByEmail` mutation. */
+export interface UpdateUserByEmailInput {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** User email address */
+  email: Scalars['String']['input'];
+  /** An object where the defined keys will be set on the `User` being updated. */
+  patch: UserPatch;
+}
+
 /** All input for the `updateUserById` mutation. */
 export interface UpdateUserByIdInput {
   /**
@@ -227,6 +310,19 @@ export interface UpdateUserByIdInput {
   id: Scalars['ID']['input'];
   /** An object where the defined keys will be set on the `User` being updated. */
   patch: UserPatch;
+}
+
+/** All input for the `updateUserByUsername` mutation. */
+export interface UpdateUserByUsernameInput {
+  /**
+   * An arbitrary string value with no semantic meaning. Will be included in the
+   * payload verbatim. May be used to track mutations by the client.
+   */
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  /** An object where the defined keys will be set on the `User` being updated. */
+  patch: UserPatch;
+  /** Unique username for login */
+  username: Scalars['String']['input'];
 }
 
 /** All input for the `updateUser` mutation. */
@@ -267,34 +363,41 @@ export interface UpdateUserPayloadUserEdgeArgs {
 /** User accounts for the application */
 export interface User extends Node {
   __typename?: 'User';
-  /** User's age in years */
-  age: Scalars['Int']['output'];
-  /** Timestamp when the user was created */
+  avatarUrl?: Maybe<Scalars['String']['output']>;
+  bio?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['Datetime']['output'];
-  /** User's first name */
-  firstName: Scalars['String']['output'];
+  /** User email address */
+  email: Scalars['String']['output'];
+  firstName?: Maybe<Scalars['String']['output']>;
   /** A globally unique identifier. Can be used in various places throughout the system to identify this single value. */
   id: Scalars['ID']['output'];
-  /** User's last name */
-  lastName: Scalars['String']['output'];
+  lastLoginAt?: Maybe<Scalars['Datetime']['output']>;
+  lastName?: Maybe<Scalars['String']['output']>;
+  /** User role: user, admin, moderator, guest */
+  role: Scalars['String']['output'];
   /** Unique identifier for the user */
   rowId: Scalars['Int']['output'];
-  /** Timestamp when the user was last updated */
+  /** Account status: active, inactive, suspended, deleted */
+  status: Scalars['String']['output'];
   updatedAt: Scalars['Datetime']['output'];
+  /** Unique username for login */
+  username: Scalars['String']['output'];
 }
 
 /** A condition to be used against `User` object types. All fields are tested for equality and combined with a logical ‘and.’ */
 export interface UserCondition {
-  /** Checks for equality with the object’s `age` field. */
-  age?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `createdAt` field. */
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
-  /** Checks for equality with the object’s `firstName` field. */
-  firstName?: InputMaybe<Scalars['String']['input']>;
-  /** Checks for equality with the object’s `lastName` field. */
-  lastName?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `email` field. */
+  email?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `role` field. */
+  role?: InputMaybe<Scalars['String']['input']>;
   /** Checks for equality with the object’s `rowId` field. */
   rowId?: InputMaybe<Scalars['Int']['input']>;
+  /** Checks for equality with the object’s `status` field. */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /** Checks for equality with the object’s `username` field. */
+  username?: InputMaybe<Scalars['String']['input']>;
 }
 
 /** A connection to a list of `User` values. */
@@ -321,48 +424,60 @@ export interface UserEdge {
 
 /** An input for mutations affecting `User` */
 export interface UserInput {
-  /** User's age in years */
-  age: Scalars['Int']['input'];
-  /** Timestamp when the user was created */
+  avatarUrl?: InputMaybe<Scalars['String']['input']>;
+  bio?: InputMaybe<Scalars['String']['input']>;
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
-  /** User's first name */
-  firstName: Scalars['String']['input'];
-  /** User's last name */
-  lastName: Scalars['String']['input'];
+  /** User email address */
+  email: Scalars['String']['input'];
+  firstName?: InputMaybe<Scalars['String']['input']>;
+  lastLoginAt?: InputMaybe<Scalars['Datetime']['input']>;
+  lastName?: InputMaybe<Scalars['String']['input']>;
+  /** User role: user, admin, moderator, guest */
+  role?: InputMaybe<Scalars['String']['input']>;
   /** Unique identifier for the user */
   rowId?: InputMaybe<Scalars['Int']['input']>;
-  /** Timestamp when the user was last updated */
+  /** Account status: active, inactive, suspended, deleted */
+  status?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Unique username for login */
+  username: Scalars['String']['input'];
 }
 
 /** Methods to use when ordering `User`. */
 export type UserOrderBy =
-  | 'AGE_ASC'
-  | 'AGE_DESC'
   | 'CREATED_AT_ASC'
   | 'CREATED_AT_DESC'
-  | 'FIRST_NAME_ASC'
-  | 'FIRST_NAME_DESC'
-  | 'LAST_NAME_ASC'
-  | 'LAST_NAME_DESC'
+  | 'EMAIL_ASC'
+  | 'EMAIL_DESC'
   | 'NATURAL'
   | 'PRIMARY_KEY_ASC'
   | 'PRIMARY_KEY_DESC'
+  | 'ROLE_ASC'
+  | 'ROLE_DESC'
   | 'ROW_ID_ASC'
-  | 'ROW_ID_DESC';
+  | 'ROW_ID_DESC'
+  | 'STATUS_ASC'
+  | 'STATUS_DESC'
+  | 'USERNAME_ASC'
+  | 'USERNAME_DESC';
 
 /** Represents an update to a `User`. Fields that are set will be updated. */
 export interface UserPatch {
-  /** User's age in years */
-  age?: InputMaybe<Scalars['Int']['input']>;
-  /** Timestamp when the user was created */
+  avatarUrl?: InputMaybe<Scalars['String']['input']>;
+  bio?: InputMaybe<Scalars['String']['input']>;
   createdAt?: InputMaybe<Scalars['Datetime']['input']>;
-  /** User's first name */
+  /** User email address */
+  email?: InputMaybe<Scalars['String']['input']>;
   firstName?: InputMaybe<Scalars['String']['input']>;
-  /** User's last name */
+  lastLoginAt?: InputMaybe<Scalars['Datetime']['input']>;
   lastName?: InputMaybe<Scalars['String']['input']>;
+  /** User role: user, admin, moderator, guest */
+  role?: InputMaybe<Scalars['String']['input']>;
   /** Unique identifier for the user */
   rowId?: InputMaybe<Scalars['Int']['input']>;
-  /** Timestamp when the user was last updated */
+  /** Account status: active, inactive, suspended, deleted */
+  status?: InputMaybe<Scalars['String']['input']>;
   updatedAt?: InputMaybe<Scalars['Datetime']['input']>;
+  /** Unique username for login */
+  username?: InputMaybe<Scalars['String']['input']>;
 }

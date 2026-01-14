@@ -20,6 +20,9 @@
     ],
     "references": [
         {
+            "path": "../../libs/users-api/tsconfig.lib.json"
+        },
+        {
             "path": "../../libs/gql/tsconfig.lib.json"
         },
         {

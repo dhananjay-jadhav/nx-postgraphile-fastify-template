@@ -32,7 +32,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@app/gql@workspace:libs/gql":
+"@app/gql@npm:0.0.1, @app/gql@workspace:libs/gql":
   version: 0.0.0-use.local
   resolution: "@app/gql@workspace:libs/gql"
   dependencies:
@@ -105,6 +105,18 @@ __metadata:
     typescript: "npm:~5.9.2"
     typescript-eslint: "npm:^8.40.0"
     webpack-cli: "npm:^5.1.4"
+  languageName: unknown
+  linkType: soft
+
+"@app/users-api@workspace:libs/users-api":
+  version: 0.0.0-use.local
+  resolution: "@app/users-api@workspace:libs/users-api"
+  dependencies:
+    "@app/gql": "npm:0.0.1"
+    "@app/utils": "npm:0.0.1"
+    grafast: "npm:1.0.0-rc.3"
+    postgraphile: "npm:^5.0.0-rc.3"
+    tslib: "npm:^2.3.0"
   languageName: unknown
   linkType: soft
 

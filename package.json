@@ -26,12 +26,13 @@
         "gen:app": "node scripts/generate-app.js",
         "gen:lib": "node scripts/generate-lib.js",
         "gen:gql-crud": "node scripts/generate-gql-crud.js",
+        "db:seed": "node scripts/seed-users.js",
         "perf:test": "ts-node --project performance/tsconfig.json performance/src/cli.ts",
         "perf:list": "ts-node --project performance/tsconfig.json performance/src/cli.ts --list",
         "perf:rest": "ts-node --project performance/tsconfig.json performance/src/cli.ts --category=rest",
         "perf:graphql": "ts-node --project performance/tsconfig.json performance/src/cli.ts --category=graphql",
         "perf:run": "ts-node --project performance/tsconfig.json performance/src/cli.ts --endpoint",
-        "perf:stress": "CONNECTIONS=100 DURATION=60 ts-node --project performance/tsconfig.json performance/src/cli.ts"
+        "perf:stress": "CONNECTIONS=80 DURATION=60 ts-node --project performance/tsconfig.json performance/src/cli.ts --category=graphql"
     },
     "private": true,
     "dependencies": {
