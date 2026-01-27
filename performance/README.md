@@ -242,7 +242,7 @@ The performance gains come from Fastify's architecture:
 
 ```bash
 yarn start api  # Start server in one terminal
-yarn perf:test  # Run tests in another terminal
+yarn perf:test | tee performance/results/performance-$(date +%Y%m%d-%H%M%S).txt # Run tests in another terminal
 ```
 
 ### Stress Test
